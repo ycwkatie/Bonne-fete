@@ -342,7 +342,8 @@
 
             // Update demand display and progress bar color
             let demandPercentage = (demand + 0.5) / 1.5 * 100; // Normalize demand from 0.5-1.5 to 0-100%
-            demandProgressBar.style.width = `${demandPercentage}%`;
+            // Clamp the percentage to a maximum of 100% to prevent overflow
+            demandProgressBar.style.width = `${Math.min(demandPercentage, 100)}%`;
 
             if (demand > 1.2) {
                 demandStatus.textContent = 'Demand: Very High';
