@@ -46,7 +46,7 @@
         }
         .btn-secondary:hover {
             background-color: #20b2aa; /* Darker teal */
-            box-shadow: 0 6px 8px rgba(72, 209, 204, 0.4);
+            box_shadow: 0 6px 8px rgba(72, 209, 204, 0.4);
             transform: translateY(-2px);
         }
         .progress-bar-container {
@@ -133,6 +133,21 @@
                     Sell All Cards
                 </button>
             </div>
+
+            <!-- Music Controls and Audio Element -->
+            <div class="flex justify-center mb-6">
+                <button id="toggleMusicBtn" class="btn-secondary py-3 px-6">
+                    Play/Pause Song
+                </button>
+                <!-- Audio element for background music -->
+                <audio id="backgroundMusic" loop preload="auto">
+                    <!-- Replace 'your-music-file.mp3' with the actual path to your music file -->
+                    <source src="your-music-file.mp3" type="audio/mpeg">
+                    <!-- You can add other formats for browser compatibility, e.g., <source src="your-music-file.ogg" type="audio/ogg"> -->
+                    Your browser does not support the audio element.
+                </audio>
+            </div>
+
             <div class="w-full h-4 bg-gray-200 rounded-full mt-4">
                 <div id="demandProgressBar" class="h-full bg-blue-500 rounded-full" style="width: 100%;"></div>
             </div>
@@ -270,6 +285,31 @@
 
         const demandProgressBar = document.getElementById('demandProgressBar');
         const demandStatus = document.getElementById('demandStatus');
+        const toggleMusicBtn = document.getElementById('toggleMusicBtn'); // Renamed sound button
+        const backgroundMusic = document.getElementById('backgroundMusic'); // Audio element
+
+
+        // --- Music Control Functions ---
+        let isMusicPlaying = false; // Track music state
+
+        function toggleMusic() {
+            if (isMusicPlaying) {
+                backgroundMusic.pause();
+                isMusicPlaying = false;
+                toggleMusicBtn.textContent = 'Play Song';
+            } else {
+                // Autoplay policy: Browsers require a user gesture to play media.
+                // We attempt to play here, but it might be blocked if not initiated by user.
+                backgroundMusic.play().then(() => {
+                    isMusicPlaying = true;
+                    toggleMusicBtn.textContent = 'Pause Song';
+                }).catch(error => {
+                    console.error("Autoplay prevented:", error);
+                    // Inform the user or handle the error, e.g., show a message
+                });
+            }
+        }
+        // --- End Music Control Functions ---
 
 
         // Update UI Function
@@ -355,6 +395,11 @@
                 updateDisplay();
                 saveGame(); // Save game after upgrading
             }
+        });
+
+        // Event listener for the music toggle button
+        toggleMusicBtn.addEventListener('click', () => {
+            toggleMusic();
         });
 
         // Main game loop that runs periodically
