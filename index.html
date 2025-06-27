@@ -137,10 +137,13 @@
             </div>
 
             <!-- Music Controls and Audio Element -->
-            <div class="flex justify-center mb-6">
+            <div class="flex justify-center items-center gap-4 mb-6"> <!-- Added items-center and gap-4 -->
                 <button id="toggleMusicBtn" class="btn-secondary py-3 px-6">
                     Play/Pause Song
                 </button>
+                <!-- GIF next to the button, adjusted size -->
+
+                <img src="bday-1472.gif" alt="Decorative GIF" class="rounded-lg shadow-lg h-10 w-auto">
                 <!-- Audio element for background music -->
                 <audio id="backgroundMusic" loop preload="auto">
                     <!-- Replace 'your-music-file.mp3' with the actual path to your music file -->
@@ -203,9 +206,6 @@
             </div>
         </div>
     </div>
-    
-    <!-- GIF at the bottom of the page -->
-    <img src="https://placehold.co/300x200/gif?text=Your+GIF+Here" alt="Decorative GIF" class="mx-auto mt-8 mb-4 block rounded-lg shadow-lg max-w-full h-auto">
 
     <script>
         // Game State Variables
