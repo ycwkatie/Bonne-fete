@@ -15,12 +15,7 @@
         .container {
             max-width: 900px;
         }
-        .card {
-            background-color: #ffffff;
-            border-radius: 1.5rem; /* More rounded corners */
-            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
-            padding: 2.5rem; /* More padding */
-        }
+
         .btn-primary {
             background-color: #ff6b81; /* Pinkish red */
             color: white;
@@ -49,16 +44,7 @@
             box_shadow: 0 6px 8px rgba(72, 209, 204, 0.4);
             transform: translateY(-2px);
         }
-        .progress-bar-container {
-            background-color: #e2e8f0;
-            border-radius: 0.5rem;
-            overflow: hidden;
-        }
-        .progress-bar-fill {
-            background-color: #ff6b81;
-            height: 100%;
-            transition: width 0.3s ease-in-out;
-        }
+
         .tooltip {
             position: relative;
             display: inline-block;
@@ -101,7 +87,6 @@
 <body class="flex items-center justify-center min-h-screen p-4 sm:p-6 md:p-8 flex-col">
 
     <!-- Added flex-col to body to stack elements vertically -->
-
     <div class="container mx-auto p-6 bg-white rounded-3xl shadow-xl flex flex-col lg:flex-row gap-8">
         <!-- Game Stats Section -->
         <div class="lg:w-1/2 p-6 bg-gradient-to-br from-purple-100 to-pink-100 rounded-2xl flex flex-col justify-between shadow-lg">
@@ -161,48 +146,60 @@
 
         </div>
 
-        <!-- Upgrades Section -->
-        <div class="lg:w-1/2 p-6 bg-gray-50 rounded-2xl shadow-lg">
-            <h2 class="text-3xl font-bold text-gray-800 mb-6 text-center">Upgrades</h2>
+        <!-- Upgrades and Stats Column -->
+        <div class="lg:w-1/2 flex flex-col gap-8">
+            <!-- Upgrades Section -->
+            <div class="p-6 bg-gray-50 rounded-2xl shadow-lg">
+                <h2 class="text-3xl font-bold text-gray-800 mb-6 text-center">Upgrades</h2>
 
-            <div class="grid grid-cols-1 gap-6">
-                <!-- Buy Automated Producer -->
-                <div class="bg-white p-6 rounded-xl shadow-md flex items-center justify-between">
-                    <div>
-                        <h3 class="text-xl font-semibold text-gray-700 mb-2">Automated Card Machine</h3>
-                        <p class="text-gray-500">Automatically produces cards over time.</p>
-                        <p id="autoProducerCostDisplay" class="text-indigo-600 font-bold text-lg mt-2">100F</p>
+                <div class="grid grid-cols-1 gap-6">
+                    <!-- Buy Automated Producer -->
+                    <div class="bg-white p-6 rounded-xl shadow-md flex items-center justify-between">
+                        <div>
+                            <h3 class="text-xl font-semibold text-gray-700 mb-2">Automated Card Machine</h3>
+                            <p class="text-gray-500">Automatically produces cards over time.</p>
+                            <p id="autoProducerCostDisplay" class="text-indigo-600 font-bold text-lg mt-2">100F</p>
+                        </div>
+                        <button id="buyAutoProducerBtn" class="btn-secondary py-3 px-6 tooltip">
+                            Buy
+                            <span class="tooltiptext">Cost: <span id="tooltipAutoProducerCost"></span></span>
+                        </button>
                     </div>
-                    <button id="buyAutoProducerBtn" class="btn-secondary py-3 px-6 tooltip">
-                        Buy
-                        <span class="tooltiptext">Cost: <span id="tooltipAutoProducerCost"></span></span>
-                    </button>
+
+                    <!-- Upgrade Manual Production Rate -->
+                    <div class="bg-white p-6 rounded-xl shadow-md flex items-center justify-between">
+                        <div>
+                            <h3 class="text-xl font-semibold text-gray-700 mb-2">Manual Efficiency Upgrade</h3>
+                            <p class="text-gray-500">Increases cards produced per click.</p>
+                            <p id="manualUpgradeCostDisplay" class="text-indigo-600 font-bold text-lg mt-2">50F</p>
+                        </div>
+                        <button id="upgradeManualBtn" class="btn-secondary py-3 px-6 tooltip">
+                            Upgrade
+                            <span class="tooltiptext">Cost: <span id="tooltipManualUpgradeCost"></span></span>
+                        </button>
+                    </div>
+
+                    <!-- Upgrade Auto Production Rate -->
+                    <div class="bg-white p-6 rounded-xl shadow-md flex items-center justify-between">
+                        <div>
+                            <h3 class="text-xl font-semibold text-gray-700 mb-2">Automated Machine Efficiency</h3>
+                            <p class="text-gray-500">Increases cards produced per automated machine.</p>
+                            <p id="autoRateUpgradeCostDisplay" class="text-indigo-600 font-bold text-lg mt-2">200F</p>
+                        </div>
+                        <button id="upgradeAutoRateBtn" class="btn-secondary py-3 px-6 tooltip">
+                            Upgrade
+                            <span class="tooltiptext">Cost: <span id="tooltipAutoRateUpgradeCost"></span></span>
+                        </button>
+                    </div>
                 </div>
+            </div>
 
-                <!-- Upgrade Manual Production Rate -->
+            <!-- Stats Section -->
+            <div class="p-6 bg-gray-50 rounded-2xl shadow-lg">
+                <h2 class="text-3xl font-bold text-gray-800 mb-6 text-center">Statistics</h2>
                 <div class="bg-white p-6 rounded-xl shadow-md flex items-center justify-between">
-                    <div>
-                        <h3 class="text-xl font-semibold text-gray-700 mb-2">Manual Efficiency Upgrade</h3>
-                        <p class="text-gray-500">Increases cards produced per click.</p>
-                        <p id="manualUpgradeCostDisplay" class="text-indigo-600 font-bold text-lg mt-2">50F</p>
-                    </div>
-                    <button id="upgradeManualBtn" class="btn-secondary py-3 px-6 tooltip">
-                        Upgrade
-                        <span class="tooltiptext">Cost: <span id="tooltipManualUpgradeCost"></span></span>
-                    </button>
-                </div>
-
-                <!-- Upgrade Auto Production Rate -->
-                <div class="bg-white p-6 rounded-xl shadow-md flex items-center justify-between">
-                    <div>
-                        <h3 class="text-xl font-semibold text-gray-700 mb-2">Automated Machine Efficiency</h3>
-                        <p class="text-gray-500">Increases cards produced per automated machine.</p>
-                        <p id="autoRateUpgradeCostDisplay" class="text-indigo-600 font-bold text-lg mt-2">200F</p>
-                    </div>
-                    <button id="upgradeAutoRateBtn" class="btn-secondary py-3 px-6 tooltip">
-                        Upgrade
-                        <span class="tooltiptext">Cost: <span id="tooltipAutoRateUpgradeCost"></span></span>
-                    </button>
+                    <h3 class="text-m text-gray-700">Total cards produced</h3>
+                    <p class="text-indigo-600 font-bold text-lg" id="total_gifts">0</p>
                 </div>
             </div>
         </div>
@@ -211,6 +208,7 @@
     <script>
         // Game State Variables
         let gifts = 0; // Now represents cards
+        let total_gifts = 0; // Total cards produced during the game
         let money = 0.00; // Now represents francs
         let giftPrice = 1.00; // Now represents card price
         let manualProductionRate = 1; // Cards per click
@@ -230,6 +228,7 @@
         function saveGame() {
             const gameState = {
                 gifts: gifts,
+                total_gifts: total_gifts,
                 money: money,
                 giftPrice: giftPrice,
                 manualProductionRate: manualProductionRate,
@@ -251,6 +250,7 @@
             if (savedState) {
                 const gameState = JSON.parse(savedState);
                 gifts = gameState.gifts || 0;
+                total_gifts = gameState.total_gifts || 0;
                 money = gameState.money || 0.00;
                 giftPrice = gameState.giftPrice || 1.00;
                 manualProductionRate = gameState.manualProductionRate || 1;
@@ -280,6 +280,8 @@
         const buyAutoProducerBtn = document.getElementById('buyAutoProducerBtn');
         const autoProducerCostDisplay = document.getElementById('autoProducerCostDisplay');
         const tooltipAutoProducerCost = document.getElementById('tooltipAutoProducerCost');
+
+        const statsTotalCards = document.getElementById('total_gifts');
 
         const upgradeManualBtn = document.getElementById('upgradeManualBtn');
         const manualUpgradeCostDisplay = document.getElementById('manualUpgradeCostDisplay');
@@ -335,6 +337,9 @@
             autoRateUpgradeCostDisplay.textContent = `${autoRateUpgradeCost.toFixed(2)}F`; // Changed to display with 'F'
             tooltipAutoRateUpgradeCost.textContent = `${autoRateUpgradeCost.toFixed(2)}F`; // Changed to display with 'F'
 
+            // Update statistics
+            statsTotalCards.textContent = total_gifts;
+
             // Disable buttons if not enough money or no gifts to sell
             buyAutoProducerBtn.disabled = money < autoProducerCost;
             upgradeManualBtn.disabled = money < manualUpgradeCost;
@@ -358,13 +363,19 @@
             }
         }
 
-        // Event Listeners for user interactions
+        /**
+         * Handles click on the "Produce a Card" button
+         */
         produceGiftBtn.addEventListener('click', () => {
             gifts += manualProductionRate;
+            total_gifts += manualProductionRate;
             updateDisplay();
             saveGame(); // Save game after every interaction
         });
 
+        /**
+         * Handles click on the "Sell All Cards" button
+         */
         sellGiftsBtn.addEventListener('click', () => {
             const giftsToSell = Math.floor(gifts * demand); // Sell gifts based on demand
             money += giftsToSell * giftPrice;
@@ -374,6 +385,9 @@
             saveGame(); // Save game after selling
         });
 
+        /**
+         * Handles purchase of Automated Card Machines
+         */
         buyAutoProducerBtn.addEventListener('click', () => {
             if (money >= autoProducerCost) {
                 money -= autoProducerCost;
@@ -384,6 +398,9 @@
             }
         });
 
+        /**
+         * Handles upgrades to the Manual Efficiency
+         */
         upgradeManualBtn.addEventListener('click', () => {
             if (money >= manualUpgradeCost) {
                 money -= manualUpgradeCost;
@@ -394,6 +411,9 @@
             }
         });
 
+        /**
+         * Handles upgrades to the Automated Machine Efficiency
+         */
         upgradeAutoRateBtn.addEventListener('click', () => {
             if (money >= autoRateUpgradeCost) {
                 money -= autoRateUpgradeCost;
@@ -413,6 +433,7 @@
         function gameLoop() {
             // Automated Production: Add gifts based on auto producers and their rate
             gifts += autoProducers * autoProductionRate;
+            total_gifts += autoProducers * autoProductionRate;
 
             // Demand Fluctuation: Update demand and price every demandCycleDuration seconds
             demandTimer++;
