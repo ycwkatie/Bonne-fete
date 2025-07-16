@@ -1,25 +1,79 @@
 /***********************************
- * Global variables
- ***********************************/
-const DEMAND_CYCLE_DURATION = 30;  // seconds for demand fluctuation
-const SAVE_KEY = 'bonneFeteCardTycoonSave'; // Unique key for this game save data
-const GAME = new Game();
-
-/***********************************
  * Objects
  * ***********************************/
+class Upgrade {
+    constructor(startingCost, growthFactor) {
+        this.cost = startingCost;
+        this.currentLevel = 1;
+        this.growthFactor = growthFactor;
+    }
+
+    buy(game) {
+        if (game.money >= this.cost) {
+            game.money -= this.cost;
+            this.cost *= this.growthFactor;
+            this.currentLevel++;
+            this.effect();
+            return true;
+        }
+        return false;
+    }
+
+    effect(){
+        throw new Error("Not implemented");
+    }
+}
+
+class AutoCardMachines extends Upgrade {
+    constructor(){
+        super(100, 1.15);
+        this.count = 0;
+    }
+
+    effect(){
+        this.count++;
+    }
+}
+
+class ManualProduction extends Upgrade{
+    constructor(){
+        super(50, 1.5);
+        this.manualProductionRate = 1;
+    }
+
+    effect(){
+        this.manualProductionRate += 1;
+    }
+}
+
+class MachineProduction extends Upgrade {
+    constructor(){
+        super(200, 1.7);
+        this.autoProductionRate = 0.1;
+        this.autoProducers = new AutoCardMachines();
+    }
+
+    get totalProduction() {
+        return this.autoProductionRate * this.autoProducers.count;
+    }
+
+    effect() {
+        this.autoProductionRate += 0.1;
+    }
+
+    produce() {
+        return this.totalProduction;
+    }
+}
+
 class Game {
     constructor() {
         this.gifts = 0;
         this.total_gifts = 0;
+        this.manualProduction = new ManualProduction();
+        this.autoProduction = new MachineProduction();
         this.money = 0.00;
         this.giftPrice = 1.00;
-        this.manualProductionRate = 1;
-        this.autoProducers = 0;
-        this.autoProductionRate = 0.1;
-        this.autoProducerCost = 100;
-        this.manualUpgradeCost = 50;
-        this.autoRateUpgradeCost = 200;
         this.demand = 1.0;
         this.demandTimer = 0;
         this.isMusicPlaying = false;
@@ -38,14 +92,25 @@ class Game {
             this.total_gifts = gameState.total_gifts || 0;
             this.money = gameState.money || 0.00;
             this.giftPrice = gameState.giftPrice || 1.00;
-            this.manualProductionRate = gameState.manualProductionRate || 1;
-            this.autoProducers = gameState.autoProducers || 0;
-            this.autoProductionRate = gameState.autoProductionRate || 0.1;
-            this.autoProducerCost = gameState.autoProducerCost || 100;
-            this.manualUpgradeCost = gameState.manualUpgradeCost || 50;
-            this.autoRateUpgradeCost = gameState.autoRateUpgradeCost || 200;
             this.demand = gameState.demand || 1.0;
             this.demandTimer = gameState.demandTimer || 0;
+
+            // Re-instantiate classes to restore methods
+            if (gameState.manualProduction) {
+                this.manualProduction = new ManualProduction();
+                Object.assign(this.manualProduction, gameState.manualProduction);
+            }
+            if (gameState.autoProduction) {
+                this.autoProduction = new MachineProduction();
+                Object.assign(this.autoProduction, gameState.autoProduction);
+
+                // Also re-instantiate nested objects
+                if (gameState.autoProduction.autoProducers) {
+                    this.autoProduction.autoProducers = new AutoCardMachines();
+                    Object.assign(this.autoProduction.autoProducers, gameState.autoProduction.autoProducers);
+                }
+            }
+
             console.log("Game loaded!");
             return true; // Indicate that a save was loaded
         }
@@ -55,8 +120,9 @@ class Game {
 
     update() {
         // Automated Production: Add gifts based on auto producers and their rate
-        this.gifts += this.autoProducers * this.autoProductionRate;
-        this.total_gifts += this.autoProducers * this.autoProductionRate;
+        const autoProduction = this.autoProduction.produce();
+        this.gifts += autoProduction;
+        this.total_gifts += autoProduction;
 
         // Demand Fluctuation: Update demand and price every DEMAND_CYCLE_DURATION seconds
         this.demandTimer++;
@@ -66,17 +132,11 @@ class Game {
             // Price also fluctuates based on demand to create a dynamic market
             this.giftPrice = 0.5 + this.demand * 0.7; // Base price of 0.5 + demand influence
         }
-
-        // Save game state in the game loop, less frequently than every interaction
-        // This ensures progress is saved even if the user just idles.
-        if (this.demandTimer % (DEMAND_CYCLE_DURATION / 2) === 0) { // Save every half-demand cycle
-            this.save();
-        }
     }
 
     produceGifts(){
-        this.gifts += this.manualProductionRate;
-        this.total_gifts += this.manualProductionRate;
+        this.gifts += this.manualProduction.manualProductionRate;
+        this.total_gifts += this.manualProduction.manualProductionRate;
         this.save(); // Save the game after every interaction
     }
 
@@ -89,30 +149,15 @@ class Game {
     }
 
     purchaseAutomatedMachines() {
-        if (this.money >= this.autoProducerCost) {
-            this.money -= this.autoProducerCost;
-            this.autoProducers++;
-            this.autoProducerCost *= 1.15; // Increase cost for the next one
-            this.save(); // Save game after buying
-        }
+        this.autoProduction.autoProducers.buy(this);
     }
 
     upgradeManualEfficiency(){
-        if (this.money >= this.manualUpgradeCost) {
-            this.money -= this.manualUpgradeCost;
-            this.manualProductionRate += 1; // Increase manual production by 1
-            this.manualUpgradeCost *= 1.5; // Increase cost for the next upgrade
-            this.save(); // Save game after upgrading
-        }
+        this.manualProduction.buy(this);
     }
 
     upgradeMachineEfficiency() {
-        if (this.money >= this.autoRateUpgradeCost) {
-            this.money -= this.autoRateUpgradeCost;
-            this.autoProductionRate += 0.1; // Increase auto production rate
-            this.autoRateUpgradeCost *= 1.7; // Increase cost for the next upgrade
-            this.save(); // Save game after upgrading
-        }
+        this.autoProduction.buy(this);
     }
 
     toggleMusic(){
@@ -135,6 +180,13 @@ class Game {
 }
 
 /***********************************
+ * Global variables
+ ***********************************/
+const DEMAND_CYCLE_DURATION = 30;  // seconds for demand fluctuation
+const SAVE_KEY = 'bonneFeteCardTycoonSave'; // Unique key for this game save data
+const GAME = new Game();
+
+/***********************************
  * DOM elements
  ***********************************/
 const giftsDisplay = document.getElementById('giftsDisplay');
@@ -152,10 +204,13 @@ const statsTotalCards = document.getElementById('total_gifts');
 const upgradeManualBtn = document.getElementById('upgradeManualBtn');
 const manualUpgradeCostDisplay = document.getElementById('manualUpgradeCostDisplay');
 const tooltipManualUpgradeCost = document.getElementById('tooltipManualUpgradeCost');
+const manualUpgradeLevelDisplay = document.getElementById('manualUpgradeLevelDisplay');
 
 const upgradeAutoRateBtn = document.getElementById('upgradeAutoRateBtn');
 const autoRateUpgradeCostDisplay = document.getElementById('autoRateUpgradeCostDisplay');
 const tooltipAutoRateUpgradeCost = document.getElementById('tooltipAutoRateUpgradeCost');
+const autoUpgradeLevelDisplay = document.getElementById('autoUpgradeLevelDisplay');
+const autoProductionRateDisplay = document.getElementById('autoProducersProduction');
 
 const demandProgressBar = document.getElementById('demandProgressBar');
 const demandStatus = document.getElementById('demandStatus');
@@ -170,25 +225,29 @@ function updateDisplay() {
     giftsDisplay.textContent = Math.floor(GAME.gifts).toString();
     moneyDisplay.textContent = `${GAME.money.toFixed(2)}F`; // Changed to display with 'F'
     giftPriceDisplay.textContent = `${GAME.giftPrice.toFixed(2)}F`; // Changed to display with 'F'
-    autoProducersDisplay.textContent = GAME.autoProducers;
+    autoProducersDisplay.textContent = GAME.autoProduction.autoProducers.count;
 
     // Update upgrade costs on display and tooltips
-    autoProducerCostDisplay.textContent = `${GAME.autoProducerCost.toFixed(2)}F`; // Changed to display with 'F'
-    tooltipAutoProducerCost.textContent = `${GAME.autoProducerCost.toFixed(2)}F`; // Changed to display with 'F'
-
-    manualUpgradeCostDisplay.textContent = `${GAME.manualUpgradeCost.toFixed(2)}F`; // Changed to display with 'F'
-    tooltipManualUpgradeCost.textContent = `${GAME.manualUpgradeCost.toFixed(2)}F`; // Changed to display with 'F'
-
-    autoRateUpgradeCostDisplay.textContent = `${GAME.autoRateUpgradeCost.toFixed(2)}F`; // Changed to display with 'F'
-    tooltipAutoRateUpgradeCost.textContent = `${GAME.autoRateUpgradeCost.toFixed(2)}F`; // Changed to display with 'F'
+    // Automated Card Machine
+    autoProducerCostDisplay.textContent = `${GAME.autoProduction.autoProducers.cost.toFixed(2)}F`; // Changed to display with 'F'
+    tooltipAutoProducerCost.textContent = `${GAME.autoProduction.autoProducers.cost.toFixed(2)}F`; // Changed to display with 'F'
+    // Manual Efficiency Upgrade
+    manualUpgradeCostDisplay.textContent = `${GAME.manualProduction.cost.toFixed(2)}F`; // Changed to display with 'F'
+    tooltipManualUpgradeCost.textContent = `${GAME.manualProduction.cost.toFixed(2)}F`; // Changed to display with 'F'
+    manualUpgradeLevelDisplay.textContent = GAME.manualProduction.currentLevel;
+    // Automated Machine Efficiency
+    autoRateUpgradeCostDisplay.textContent = `${GAME.autoProduction.cost.toFixed(2)}F`; // Changed to display with 'F'
+    tooltipAutoRateUpgradeCost.textContent = `${GAME.autoProduction.cost.toFixed(2)}F`; // Changed to display with 'F'
+    autoUpgradeLevelDisplay.textContent = GAME.autoProduction.currentLevel;
+    autoProductionRateDisplay.textContent = `${GAME.autoProduction.totalProduction.toFixed(2)}/sec`;
 
     // Update statistics
-    statsTotalCards.textContent = GAME.total_gifts;
+    statsTotalCards.textContent = Math.floor(GAME.total_gifts);
 
     // Disable buttons if not enough money or no gifts to sell
-    buyAutoProducerBtn.disabled = GAME.money < GAME.autoProducerCost;
-    upgradeManualBtn.disabled = GAME.money < GAME.manualUpgradeCost;
-    upgradeAutoRateBtn.disabled = GAME.money < GAME.autoRateUpgradeCost;
+    buyAutoProducerBtn.disabled = GAME.money < GAME.autoProduction.autoProducers.cost;
+    upgradeManualBtn.disabled = GAME.money < GAME.manualProduction.cost;
+    upgradeAutoRateBtn.disabled = GAME.money < GAME.autoProduction.cost;
     sellGiftsBtn.disabled = GAME.gifts === 0;
 
     // Update demand display and progress bar color
@@ -266,9 +325,14 @@ window.onload = function() {
 
     updateDisplay(GAME); // Update UI with initial or loaded values
 
-    // Run gameLoop every 100 milliseconds (10 times per second)
+    // Run gameLoop every second
     setInterval(() => {
         GAME.update();
         updateDisplay();
-    }, 100);
+    }, 1000);
+
+    // Save game every 30 seconds
+    setInterval(() => {
+        GAME.save();
+    }, 30000);
 };
