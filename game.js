@@ -251,9 +251,8 @@ function updateDisplay() {
     sellGiftsBtn.disabled = GAME.gifts === 0;
 
     // Update demand display and progress bar color
-    let demandPercentage = (GAME.demand + 0.5) / 1.5 * 100; // Normalize demand from 0.5-1.5 to 0-100%
-    // Clamp the percentage to a maximum of 100% to prevent overflow
-    demandProgressBar.style.width = `${Math.min(demandPercentage, 100)}%`;
+    let demandPercentage = ((GAME.demand - 0.5) / (1.5 - 0.5)) * 100; // Normalize demand: 0.5-1.5 to 0-100%
+    demandProgressBar.style.width = `${Math.min(demandPercentage, 100)}%`; // Clamp the percentage to a max of 100%
 
     if (GAME.demand > 1.2) {
         demandStatus.textContent = 'Demand: Very High';
